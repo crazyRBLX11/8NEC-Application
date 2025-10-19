@@ -14,9 +14,8 @@ local GroupIDs = {
 	["33SCOUT"] = 409219285
 	
 }
-local PendingEquipmentChanges = {}
 
-function LockerUpdate(Player: Player, Uniform:any?, Firearm:any?)
+function LockerUpdate(Player: Player, Uniform:any?, Firearm:any?, RemoveAccessories:boolean?)
 	if not Player.Character then return end
 	if Uniform then
 		if Uniform[1] ~= 0 then
@@ -51,11 +50,6 @@ function LockerUpdate(Player: Player, Uniform:any?, Firearm:any?)
 				local NewWeapon = ReplicatedStorage:WaitForChild(v):Clone()
 				NewWeapon.Parent = Player.Backpack
 				print("given")
-				local LoadoutText = Instance.new("TextLabel")
-				LoadoutText.Size = UDim2.fromScale(1, 0.2)
-				LoadoutText.TextSize = 20
-				LoadoutText.Text = v
-				LoadoutText.Parent = Player.PlayerGui.LockerUI.Background.LoadoutFrame
 
 			-- creating the requipping bug, to be inspected later
 				--else
@@ -66,9 +60,15 @@ function LockerUpdate(Player: Player, Uniform:any?, Firearm:any?)
 			--	end
 			--	Tool:Destroy()
 			end
-			local vPosition = table.find(PendingEquipmentChanges, v)
-			table.remove(PendingEquipmentChanges, vPosition)
 		end
+	end
+	if RemoveAccessories == true then
+		for i, v in ipairs(Player.Character:GetChildren()) do
+			if v:IsA("Accessory") then
+				v:Destroy()
+			end
+		end
+		RemoveAccessories = false
 	end
 end
 
@@ -278,6 +278,7 @@ function RegisterPlayer(Player: Player)
 			end)
 		end
 
+		local PendingEquipmentChanges = {}
 		-- weapons
 		EquipmentFrameHolder.ScrollingFrame:WaitForChild("1.D19").MouseButton1Click:Connect(function()
 			table.insert(PendingEquipmentChanges, "D-19")
@@ -287,14 +288,24 @@ function RegisterPlayer(Player: Player)
 			table.insert(PendingEquipmentChanges, "Binoculars")
 		end)
 
+		local RemoveAccessories = false
+		RemoveAccessoriesButton.MouseButton1Click:Connect(function()
+			RemoveAccessories = true
+		end)
+	
 		-- Discard and Apply Buttons.
+		local Uniform: {any} = {}
 		DiscardButton.MouseButton1Click:Connect(function()
 			Background.Visible = false
 			print("discarded")
+			shirt = 0
+			pants = 0
+			table.clear(Uniform)
+			table.clear(PendingEquipmentChanges)
+			RemoveAccessories = false
 		end)
 
 		ApplyButton.MouseButton1Click:Connect(function()
-			local Uniform: {any} = {}
 			Background.Visible = false
 			print("closed and saved")
 			if shirt then
@@ -308,15 +319,10 @@ function RegisterPlayer(Player: Player)
 				table.insert(Uniform, 0)
 			end
 			task.wait()
-			LockerUpdate(Player, Uniform, PendingEquipmentChanges)
-		end)
-		
-		RemoveAccessoriesButton.MouseButton1Click:Connect(function()
-			for i, v in ipairs(Player.Character:GetChildren()) do
-				if v:IsA("Accessory") then
-					v:Destroy()
-				end
-			end
+			LockerUpdate(Player, Uniform, PendingEquipmentChanges, RemoveAccessories)
+			task.wait()
+			table.clear(PendingEquipmentChanges)
+			RemoveAccessories = false
 		end)
 	end
 	
