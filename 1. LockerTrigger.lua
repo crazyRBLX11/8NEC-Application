@@ -22,5 +22,23 @@ local OpenLocker = ProximityPrompt.Triggered:Connect(function(player: Player)
 
 		Background.Visible = true
 		print("Player "..player.Name.." is in group "..GroupID.." and the locker GUI is visible.")
+		
+		for i, Label in ipairs(Background.LoadoutFrame:GetChildren()) do
+			if Label:IsA("TextLabel") then
+				Label:Destroy()
+			end
+		end
+		for index, Tool in ipairs(player.Backpack:GetChildren()) do
+			if Tool:IsA("Tool") then
+				local LoadoutText = Instance.new("TextLabel")
+				LoadoutText.Size = UDim2.fromScale(1, 0.2)
+				LoadoutText.TextSize = 20
+				LoadoutText.Text = Tool.Name
+				LoadoutText.BackgroundColor3 = Color3.fromRGB(26, 24, 22)
+				LoadoutText.BackgroundTransparency = 0.5
+				LoadoutText.TextColor3 = Color3.fromRGB(255, 255, 255)
+				LoadoutText.Parent = Background.LoadoutFrame
+			end
+		end
 	end
 end)
